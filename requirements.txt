@@ -1,0 +1,8 @@
+Flask==3.0.3
+Pillow==10.4.0
+numpy==2.0.2
+scikit-learn==1.5.2
+tensorflow==2.18.0
+tensorflow-io-gcs-filesystem==0.37.1
+joblib==1.4.2
+gunicorn==23.0.0

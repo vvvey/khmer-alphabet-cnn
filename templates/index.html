@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Khmer Handwriting</title>
+    <link rel="icon" href="./static/icons/favicon.ico" type="image/x-icon" />
+    <style>
+      body {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
+      canvas {
+        border: 1px solid #000;
+        cursor: crosshair;
+      }
+
+      .container {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+      }
+      .left {
+        flex: 1;
+        padding: 10px;
+        background-color: #f0f0f0;
+      }
+      .right {
+        flex: 1;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Khmer Alphabet Handwriting Classification</h1>
+    <input type="range" id="brushSize" min="1" max="100" value="15" />
+    <button id="clearCanvas">Clear Canvas</button>
+    <button id="predictBtn">Predict</button>
+    <div class="container">
+      <div class="left">
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+      </div>
+      <div class="right">
+        <h2>
+          Result:<span id="predicted_letter"
+            ><!-- Predicted Letter Will Show here --></span
+          >
+        </h2>
+        <ul id="resultList">
+          <!-- List items will be added here dynamically -->
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("drawingCanvas");
+      const ctx = canvas.getContext("2d");
+      const brushSizeInput = document.getElementById("brushSize");
+      const sizeValue = document.getElementById("sizeValue");
+      const clearCanvasBtn = document.getElementById("clearCanvas");
+      const predictBtn = document.getElementById("predictBtn");
+
+      let isDrawing = false;
+      let brushSize = parseInt(brushSizeInput.value);
+      let minX = canvas.width;
+      let minY = canvas.height;
+      let maxX = 0;
+      let maxY = 0;
+
+      // Function to fill canvas with white background
+      function fillWhiteBackground() {
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Set initial white background on page load
+      window.onload = () => {
+        fillWhiteBackground();
+      };
+
+      // Update brush size display
+      brushSizeInput.addEventListener("input", (e) => {
+        brushSize = parseInt(e.target.value);
+        sizeValue.textContent = brushSize;
+      });
+
+      // Mouse events
+      canvas.addEventListener("mousedown", startDrawing);
+      canvas.addEventListener("mouseup", stopDrawing);
+      canvas.addEventListener("mousemove", draw);
+
+      function startDrawing(e) {
+        isDrawing = true;
+        draw(e); // To draw a point where the mouse is clicked
+      }
+
+      function stopDrawing() {
+        isDrawing = false;
+        ctx.beginPath();
+        cropAndUploadImage(); // everytime user stop draw, predict the image
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "black";
+
+        // Update min/max coordinates
+        const x = e.clientX - canvas.offsetLeft;
+        const y = e.clientY - canvas.offsetTop;
+
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      }
+
+      // Clear canvas
+      clearCanvasBtn.addEventListener("click", () => {
+        const ul = document.getElementById("resultList");
+        const span = document.getElementById("predicted_letter");
+
+        ul.innerHTML = "";
+        span.innerHTML = "";
+
+        fillWhiteBackground(); // Fill with white when clearing
+        minX = canvas.width; // Reset boundaries
+        minY = canvas.height;
+        maxX = 0;
+        maxY = 0;
+      });
+
+      predictBtn.addEventListener("click", () => {
+        cropAndUploadImage();
+      });
+
+      // Crop the canvas and upload the image
+      function cropAndUploadImage() {
+        // Calculate width and height of the cropped area
+        // The crop area is a square
+        const width = Math.max(maxX - minX, maxY - minY) + 50;
+        const height = width;
+
+        // To center the handwriting
+        const leftMargin = (width - (maxX - minX)) / 2;
+        const topMargin = (height - (maxY - minY)) / 2;
+
+        // Create a new canvas to crop the image
+        const croppedCanvas = document.createElement("canvas");
+        const croppedCtx = croppedCanvas.getContext("2d");
+
+        // Set new canvas dimensions
+        croppedCanvas.width = width;
+        croppedCanvas.height = height;
+
+        // Crop the the handwriting into new canvas
+        croppedCtx.drawImage(
+          canvas,
+          minX - leftMargin,
+          minY - topMargin,
+          width,
+          height,
+          0,
+          0,
+          width,
+          height
+        );
+
+        // Convert to image data URL
+        const imageData = croppedCanvas.toDataURL();
+
+        fetch("/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ image: imageData }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.message === "Image info fetched and processed") {
+              // Not the best handling the message
+
+              const ul = document.getElementById("resultList");
+              const span = document.getElementById("predicted_letter");
+
+              ul.innerHTML = "";
+              span.innerHTML = "";
+
+              span.textContent = data.letter;
+
+              data.prob.forEach((item) => {
+                const li = document.createElement("li");
+                if (item["probability"] > 0) {
+                  // only show alphabet with a probabily higher than 0
+                  li.textContent =
+                    item["class"] + ": " + item["probability"] * 100 + "%"; // Assuming each item is a string
+                  ul.appendChild(li);
+                }
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
