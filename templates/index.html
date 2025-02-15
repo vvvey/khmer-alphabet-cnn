@@ -5,64 +5,265 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Khmer Handwriting</title>
     <link rel="icon" href="./static/icons/favicon.ico" type="image/x-icon" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-      body {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        background-color: #f0f0f0;
+      /* Previous CSS remains the same */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
       }
-      canvas {
-        border: 1px solid #000;
-        cursor: crosshair;
+
+      body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 2rem;
+      }
+
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        font-size: 2.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      button {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 25px;
+        background: #4a90e2;
+        color: white;
+        cursor: pointer;
+        font-weight: 500;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+
+      #brushSize {
+        width: 200px;
+        height: 8px;
+        -webkit-appearance: none;
+        background: #ddd;
+        border-radius: 4px;
+        outline: none;
+      }
+
+      #brushSize::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        background: #4a90e2;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.2s;
       }
 
       .container {
         display: flex;
-        justify-content: space-between;
-        width: 100%;
+        gap: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
       }
-      .left {
-        flex: 1;
-        padding: 10px;
-        background-color: #f0f0f0;
+
+      canvas {
+        border: 2px solid #4a90e2;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       }
+
       .right {
         flex: 1;
-        padding: 10px;
+        padding: 1rem;
       }
+
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+      }
+
+      #predicted_letter {
+        font-size: 2rem;
+        color: #4a90e2;
+        margin-left: 1rem;
+        font-weight: 600;
+      }
+
+      #resultList {
+        list-style: none;
+        padding: 0;
+      }
+
+      #resultList li {
+        padding: 0.5rem 1rem;
+        margin: 0.5rem 0;
+        background: #f8f9fa;
+        border-radius: 5px;
+        color: #2c3e50;
+        font-size: 0.9rem;
+        transition: transform 0.2s;
+      }
+
+      #resultList li:hover {
+        transform: translateX(5px);
+        background: #e9ecef;
+      }
+
+      @media (max-width: 1200px) {
+        .container {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        canvas {
+          width: 100%;
+          height: auto;
+        }
+      }
+
+      .project-info {
+            max-width: 1400px;
+            margin: 2em auto 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .project-info h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .project-info p {
+            color: #34495e;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .features, .instructions {
+            margin: 1.5rem 0;
+        }
+
+        .features h3, .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 0.8rem;
+        }
+
+        .features ul, .instructions ol {
+            margin-left: 1.5rem;
+            color: #34495e;
+        }
+
+        .features li, .instructions li {
+            margin: 0.5rem 0;
+            line-height: 1.4;
+        }
+
+        .github-link {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .github-link a {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            background: #24292e;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+        }
+
+        .github-link a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .github-link img {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .project-info {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+
+            .features ul, .instructions ol {
+                margin-left: 1rem;
+            }
+        }
     </style>
   </head>
   <body>
     <h1>Khmer Alphabet Handwriting Classification</h1>
-    <input type="range" id="brushSize" min="1" max="100" value="15" />
-    <button id="clearCanvas">Clear Canvas</button>
-    <button id="predictBtn">Predict</button>
+     <!-- Added project description section -->
+    
+
+    <div class="controls">
+      <input type="range" id="brushSize" min="1" max="100" value="15" />
+      <button id="clearCanvas">Clear Canvas</button>
+      <button id="predictBtn">Predict</button>
+    </div>
     <div class="container">
       <div class="left">
         <canvas id="drawingCanvas" width="800" height="600"></canvas>
       </div>
       <div class="right">
-        <h2>
-          Result:<span id="predicted_letter"
-            ><!-- Predicted Letter Will Show here --></span
-          >
-        </h2>
-        <ul id="resultList">
-          <!-- List items will be added here dynamically -->
-        </ul>
+        <h2>Result: <span id="predicted_letter"></span></h2>
+        <ul id="resultList"></ul>
       </div>
     </div>
 
+    <div class="project-info">
+      <h2>About This Project</h2>
+      <p>This web application uses machine learning to recognize handwritten Khmer characters. Draw a Khmer letter in the canvas above, and the model will predict which letter it is.</p>
+      
+      <div class="features">
+          <h3>Key Features:</h3>
+          <ul>
+              <li>Real-time handwriting recognition</li>
+              <li>Probability scores for predictions</li>
+              <li>Adjustable brush size for drawing</li>
+              <li>Support for all Khmer consonants</li>
+          </ul>
+      </div>
+
+      <div class="github-link">
+          <a href="https://github.com/vvvey/khmer-alphabet-cnn" target="_blank">
+              <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Logo">
+              View Project on GitHub
+          </a>
+      </div>
+  </div>
     <script>
       const canvas = document.getElementById("drawingCanvas");
       const ctx = canvas.getContext("2d");
       const brushSizeInput = document.getElementById("brushSize");
-      const sizeValue = document.getElementById("sizeValue");
       const clearCanvasBtn = document.getElementById("clearCanvas");
       const predictBtn = document.getElementById("predictBtn");
-
       let isDrawing = false;
       let brushSize = parseInt(brushSizeInput.value);
       let minX = canvas.width;
@@ -70,49 +271,45 @@
       let maxX = 0;
       let maxY = 0;
 
-      // Function to fill canvas with white background
       function fillWhiteBackground() {
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Set initial white background on page load
       window.onload = () => {
         fillWhiteBackground();
       };
 
-      // Update brush size display
       brushSizeInput.addEventListener("input", (e) => {
         brushSize = parseInt(e.target.value);
-        sizeValue.textContent = brushSize;
       });
 
-      // Mouse events
       canvas.addEventListener("mousedown", startDrawing);
       canvas.addEventListener("mouseup", stopDrawing);
       canvas.addEventListener("mousemove", draw);
+      canvas.addEventListener("mouseout", stopDrawing);
 
       function startDrawing(e) {
         isDrawing = true;
-        draw(e); // To draw a point where the mouse is clicked
+        draw(e);
       }
 
       function stopDrawing() {
         isDrawing = false;
         ctx.beginPath();
-        cropAndUploadImage(); // everytime user stop draw, predict the image
+        cropAndUploadImage();
       }
 
       function draw(e) {
         if (!isDrawing) return;
-
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
         ctx.lineWidth = brushSize;
         ctx.lineCap = "round";
         ctx.strokeStyle = "black";
-
-        // Update min/max coordinates
-        const x = e.clientX - canvas.offsetLeft;
-        const y = e.clientY - canvas.offsetTop;
 
         minX = Math.min(minX, x);
         minY = Math.min(minY, y);
@@ -125,16 +322,13 @@
         ctx.moveTo(x, y);
       }
 
-      // Clear canvas
       clearCanvasBtn.addEventListener("click", () => {
         const ul = document.getElementById("resultList");
         const span = document.getElementById("predicted_letter");
-
         ul.innerHTML = "";
         span.innerHTML = "";
-
-        fillWhiteBackground(); // Fill with white when clearing
-        minX = canvas.width; // Reset boundaries
+        fillWhiteBackground();
+        minX = canvas.width;
         minY = canvas.height;
         maxX = 0;
         maxY = 0;
@@ -144,26 +338,18 @@
         cropAndUploadImage();
       });
 
-      // Crop the canvas and upload the image
       function cropAndUploadImage() {
-        // Calculate width and height of the cropped area
-        // The crop area is a square
         const width = Math.max(maxX - minX, maxY - minY) + 50;
         const height = width;
-
-        // To center the handwriting
         const leftMargin = (width - (maxX - minX)) / 2;
         const topMargin = (height - (maxY - minY)) / 2;
 
-        // Create a new canvas to crop the image
         const croppedCanvas = document.createElement("canvas");
         const croppedCtx = croppedCanvas.getContext("2d");
 
-        // Set new canvas dimensions
         croppedCanvas.width = width;
         croppedCanvas.height = height;
 
-        // Crop the the handwriting into new canvas
         croppedCtx.drawImage(
           canvas,
           minX - leftMargin,
@@ -176,9 +362,8 @@
           height
         );
 
-        // Convert to image data URL
         const imageData = croppedCanvas.toDataURL();
-
+        
         fetch("/predict", {
           method: "POST",
           headers: {
@@ -189,22 +374,16 @@
           .then((response) => response.json())
           .then((data) => {
             if (data.message === "Image info fetched and processed") {
-              // Not the best handling the message
-
               const ul = document.getElementById("resultList");
               const span = document.getElementById("predicted_letter");
-
               ul.innerHTML = "";
               span.innerHTML = "";
-
               span.textContent = data.letter;
-
               data.prob.forEach((item) => {
                 const li = document.createElement("li");
                 if (item["probability"] > 0) {
-                  // only show alphabet with a probabily higher than 0
                   li.textContent =
-                    item["class"] + ": " + item["probability"] * 100 + "%"; // Assuming each item is a string
+                    item["class"] + ": " + item["probability"] * 100 + "%";
                   ul.appendChild(li);
                 }
               });
